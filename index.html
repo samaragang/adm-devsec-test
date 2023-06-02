@@ -51,7 +51,7 @@
                         <label for="app_policy_add" class="form-label">Политика</label>
                         <input type="text" class="form-control" id="app_policy_add">
                     </div>
-                    <p id="add-error" style="color:red;"></p>
+                    <p id="error-add" style="color:red;"></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
@@ -82,6 +82,7 @@
                         <label for="app_policy" class="form-label">Политика</label>
                         <input type="text" class="form-control" id="app_policy">
                     </div>
+                    <p id="error-edit" style="color:red;"></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
@@ -165,32 +166,27 @@
             }
         });
     </script>
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
         crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 
     <script>
         function getAppList() {
-            $.ajax({
-                type: "POST",
-                url: "http://checkstatus.website:8099/Face/App_List",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify(""),
-                success: function (data) {
-                    updateTable(data);
-
+            fetch('http://checkstatus.website:8099/Face/App_List', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
                 },
-                error: function (xhr, status, error) {
-                    console.log("Ошибка при выполнении запроса:", error);
-                }
-            });
+                body: JSON.stringify("")
+            })
+                .then(response => response.json())
+                .then(data => updateTable(data))
+                .catch(error => console.error('Ошибка при выполнении запроса:', error));
+
         }
 
-        function updateTable(appData) {
-            data_obj = JSON.parse(appData);
-            console.log(appData);
+        function updateTable(data_obj) {
             let aliases = data_obj.ids;
             let names = data_obj.names;
             let id = data_obj.app_table_ids;
@@ -230,29 +226,28 @@
             let appAlias = $("#app_id").val();
             let appPolicy = $("#app_policy").val();
 
-            $.ajax({
-                type: "POST",
-                url: "http://checkstatus.website:8099/Face/Update_app",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify({
-                    "app_id": appAlias,
-                    "app_name": appName,
-                    "policy_id": appPolicy,
-                    "agent_js_config": "123123",
-                    "correlations_config": "321321"
-                }),
-                success: function (data) {
+            const payload = `{"app_id": "${appAlias}", "app_name": "${appName}", "policy_id": ${appPolicy}, "agent_js_config": "123123", "correlations_config": "321321"}`;
+
+            fetch("http://checkstatus.website:8099/Face/Update_app", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
                     if (data.error === "0") {
                         $("#modal").modal("hide");
                         getAppList();
                     } else {
-                        alert("Ошибка при изменении приложения");
+                        $("#error-edit").text("Ошибка при изменении приложения");
                     }
-                },
-                error: function (xhr, status, error) {
+                })
+                .catch(error => {
                     console.log("Ошибка при выполнении запроса:", error);
-                }
-            });
+                });
+
         });
 
         $("#add-app-btn").click(function () {
@@ -260,29 +255,26 @@
             let appAlias = $("#app_id_add").val();
             let appPolicy = $("#app_policy_add").val();
 
-            $.ajax({
-                type: "POST",
-                url: "http://checkstatus.website:8099/Face/New_app",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify({
-                    "app_id": appAlias,
-                    "app_name": appName,
-                    "policy_id": appPolicy,
-                    "agent_js_config": "123123",
-                    "correlations_config": "321321"
-                }),
-                success: function (data) {
+            const payload = `{"app_id": "${appAlias}", "app_name": "${appName}", "policy_id": ${appPolicy}, "agent_js_config": "123123", "correlations_config": "321321"}`;
+            fetch("http://checkstatus.website:8099/Face/New_app", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json; charset=utf-8"
+                },
+                body: JSON.stringify(payload)
+            })
+                .then(response => response.json())
+                .then(data => {
                     if (data.error === "0") {
                         $("#modalAdd").modal("hide");
                         getAppList();
                     } else {
-                        $("#add-error").text("Ошибка при добавлении приложения");
+                        $("#error-add").text("Ошибка при добавлении приложения");
                     }
-                },
-                error: function (xhr, status, error) {
+                })
+                .catch(error => {
                     console.log("Ошибка при выполнении запроса:", error);
-                }
-            });
+                });
         });
     </script>
 
