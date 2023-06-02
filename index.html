@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>test</title>
+</head>
+
+<body onload="getAppList()">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAdd">Добавить
+        приложение</button>
+
+    <table id="app-table" class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя приложения</th>
+                <th>Alias</th>
+                <th>Политика</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="app-table-body">
+        </tbody>
+    </table>
+
+    <!-- Модальное окно для создания -->
+    <div class="modal fade" id="modalAdd" tabindex="-1" aria-labelledby="modalLabelAdd" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabelAdd">Добавление данных строки</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label for="app_name_add" class="form-label">Имя приложения</label>
+                        <input type="text" class="form-control" id="app_name_add">
+                    </div>
+                    <div class="mb-3">
+                        <label for="app_id_add" class="form-label">Alias</label>
+                        <input type="text" class="form-control" id="app_id_add">
+                    </div>
+                    <div class="mb-3">
+                        <label for="app_policy_add" class="form-label">Политика</label>
+                        <input type="text" class="form-control" id="app_policy_add">
+                    </div>
+                    <p id="add-error" style="color:red;"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="add-app-btn">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для редактирования -->
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Редактирование данных строки</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="app_name" class="form-label">Имя приложения</label>
+                        <input type="text" class="form-control" id="app_name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="app_id" class="form-label">Alias</label>
+                        <input type="text" class="form-control" id="app_id" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="app_policy" class="form-label">Политика</label>
+                        <input type="text" class="form-control" id="app_policy">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" id="edit-app-button">Сохранить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas class="diagramm" id="myChart"></canvas>
+    <script>
+        let ctx = document.getElementById("myChart").getContext("2d");
+        let chartData = [];
+
+        for (let i = 0; i <= 60 * 2; i++) {
+            let hour = Math.floor(i / 60);
+            let minute = i % 60;
+            chartData.push({
+                x: `${hour}:${minute}`,
+                y1: Math.floor(Math.random() * 600),
+                y2: Math.floor(Math.random() * 600),
+                y3: Math.floor(Math.random() * 600),
+            });
+        }
+
+        let myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                datasets: [
+                    {
+                        label: 'Нижний столбец',
+                        backgroundColor: 'rgb(34, 139, 34)',
+                        stack: 'Stack 0',
+                        data: chartData.map((data) => {
+                            return { x: data.x, y: data.y1 };
+                        })
+                    },
+                    {
+                        label: 'Средний столбец',
+                        backgroundColor: 'rgb(0, 191, 255)',
+                        stack: 'Stack 0',
+                        data: chartData.map((data) => {
+                            return { x: data.x, y: data.y2 };
+                        })
+                    },
+                    {
+                        label: 'Верхний столбец',
+                        backgroundColor: 'rgb(147, 112, 219)',
+
+                        stack: 'Stack 0',
+                        data: chartData.map((data) => {
+                            return { x: data.x, y: data.y3 };
+                        })
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    xAxes: [{
+
+                        labels: chartData.map((data) => data.x),
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 8
+                        },
+                        gridLines: {
+                            drawOnChartArea: false
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min: 0,
+                            max: 2000,
+                            stepSize: 200
+                        },
+                        gridLines: {
+                            drawOnChartArea: false
+                        }
+                    }]
+                }
+            }
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4"
+        crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+
+    <script>
+        function getAppList() {
+            $.ajax({
+                type: "POST",
+                url: "http://checkstatus.website:8099/Face/App_List",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(""),
+                success: function (data) {
+                    updateTable(data);
+
+                },
+                error: function (xhr, status, error) {
+                    console.log("Ошибка при выполнении запроса:", error);
+                }
+            });
+        }
+
+        function updateTable(appData) {
+            data_obj = JSON.parse(appData);
+            console.log(appData);
+            let aliases = data_obj.ids;
+            let names = data_obj.names;
+            let id = data_obj.app_table_ids;
+            let policies = data_obj.policy_ids;
+
+            let table = $('#app-table');
+            table.find('tbody').empty();
+
+            for (let i = 0; i < id.length; i++) {
+                let row = $('<tr>');
+                row.append($('<td>').text(id[i]));
+                row.append($('<td>').text(names[i]));
+                row.append($('<td>').text(aliases[i]));
+                row.append($('<td>').text(policies[i]));
+                let editBtn = $("<button>").addClass("btn btn-primary").attr("data-bs-toggle", "modal").attr("data-bs-target", "#modal").text("Редактировать");
+
+                editBtn.click(function () {
+                    let row = $(this).closest("tr");
+                    let appId = row.find("td:eq(0)").text();
+                    let appName = row.find("td:eq(1)").text();
+                    let appAlias = row.find("td:eq(2)").text();
+                    let appPolicy = row.find("td:eq(3)").text();
+
+                    $("#app_id").val(appId);
+                    $("#app_id").val(appAlias);
+                    $("#app_name").val(appName);
+                    $("#app_policy").val(appPolicy);
+                });
+                row.append($("<td>").append(editBtn));
+                table.append(row);
+            }
+
+        }
+
+        $('#edit-app-button').click(function () {
+            let appName = $("#app_name").val();
+            let appAlias = $("#app_id").val();
+            let appPolicy = $("#app_policy").val();
+
+            $.ajax({
+                type: "POST",
+                url: "http://checkstatus.website:8099/Face/Update_app",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    "app_id": appAlias,
+                    "app_name": appName,
+                    "policy_id": appPolicy,
+                    "agent_js_config": "123123",
+                    "correlations_config": "321321"
+                }),
+                success: function (data) {
+                    if (data.error === "0") {
+                        $("#modal").modal("hide");
+                        getAppList();
+                    } else {
+                        alert("Ошибка при изменении приложения");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Ошибка при выполнении запроса:", error);
+                }
+            });
+        });
+
+        $("#add-app-btn").click(function () {
+            let appName = $("#app_name_add").val();
+            let appAlias = $("#app_id_add").val();
+            let appPolicy = $("#app_policy_add").val();
+
+            $.ajax({
+                type: "POST",
+                url: "http://checkstatus.website:8099/Face/New_app",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    "app_id": appAlias,
+                    "app_name": appName,
+                    "policy_id": appPolicy,
+                    "agent_js_config": "123123",
+                    "correlations_config": "321321"
+                }),
+                success: function (data) {
+                    if (data.error === "0") {
+                        $("#modalAdd").modal("hide");
+                        getAppList();
+                    } else {
+                        $("#add-error").text("Ошибка при добавлении приложения");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log("Ошибка при выполнении запроса:", error);
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
